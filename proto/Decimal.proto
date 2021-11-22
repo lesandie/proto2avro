@@ -1,0 +1,6 @@
+syntax = "proto3";
+
+message Decimal {
+  // example: 3.1415926535 is written as it looks like `3.1415926535`
+  string value = 1;
+}

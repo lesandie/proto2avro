@@ -1,0 +1,14 @@
+{
+  "type": "record",
+  "name": "Decimal",
+  "fields": [
+    {
+      "name": "value",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    }
+  ]
+}

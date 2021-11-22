@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "Decimal.proto";
+
+message RawTransactionReceivedV3 {
+  string internal_id = 1;
+  string external_id = 2;
+  string transaction_provider = 3;
+  string account = 4;
+  Decimal amount = 5;
+  string currency = 6;
+  google.protobuf.Timestamp ts = 7;
+  bool finalized = 8;
+  optional string reference = 9;
+  optional string merchant_name = 10;
+  optional string merchant_id = 11;
+  optional string merchant_category_code = 12;
+  optional string merchant_city = 13;
+  optional string merchant_address = 14;
+  optional string merchant_country = 15;
+  optional string terminal_id = 16;
+  optional string openapi_bank = 17;
+}
