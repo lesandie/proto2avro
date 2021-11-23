@@ -1,18 +1,17 @@
 import importlib.util
 import json
-import logging
 import os.path
 import sys
-import typing
 import click
+from typing import OrderedDict, Any, Dict, List
 from google.protobuf.descriptor import Descriptor, FieldDescriptor
 
 
 class SchemaConvertor:
     def __init__(self, pb2_path: str, avro_path: str):
-        self.pb2_path = pb2_path
-        self.avro_path = avro_path
-        self.type_to_convertor = {
+        self.__pb2_path = pb2_path
+        self.__avro_path = avro_path
+        self.__type_to_convertor = {
             FieldDescriptor.TYPE_DOUBLE: {"type": "float", "method": self.__read_through},
             FieldDescriptor.TYPE_FLOAT: {"type": "float", "method": self.__read_through},
             FieldDescriptor.TYPE_INT64: {"type": "int", "method": self.__read_through},
@@ -33,8 +32,11 @@ class SchemaConvertor:
             FieldDescriptor.TYPE_SINT64: {"type": "int", "method": self.__read_through},
         } 
     
-    # Many of these methods are private methods and not static methods
+    # These methods are private methods and not static methods
     def __import_pb2_module(self, root: str, compiled_proto: str) -> str:
+        """
+        Import the pb2 module files
+        """
         module_basename = os.path.basename(root)
         module_path = f"{module_basename}/{compiled_proto}.py"
         spec = importlib.util.spec_from_file_location(
@@ -46,6 +48,9 @@ class SchemaConvertor:
         return importlib.import_module(name=compiled_proto)
 
     def __fix_import_error(self, root: str, filename: str) -> None:
+        """
+        Hardcoded fix when an import error occurs because of an incorrect format
+        """
         filepath = f"{root}/{filename}"
         with open(filepath, "r+") as f:
             content = f.read()
@@ -56,16 +61,22 @@ class SchemaConvertor:
             f.seek(0)
             f.write(new_content)
 
-    def __read_through(self, field_name: str, field_type: str) -> typing.Dict[str, str]:
+    def __read_through(self, field_name: str, field_type: str) -> Dict[str, str]:
         """
         system default is used: zero for numeric types, the empty string for strings, false for bools
         """
         return {"name": field_name, "type": ["null", field_type], "default": None}
 
     def __not_readable(self, field_name: str, field_type: str):
+        """
+        When the Field type is nor supported raise an exceptio
+        """
         raise TypeError(f"Type {field_type} not supported")
     
-    def __convert_message_type(self, field: FieldDescriptor) -> typing.Dict[str, str]:
+    def __convert_message_type(self, field: FieldDescriptor) -> Dict[str, str]:
+        """
+        Converts the protobuf message type to an avro field
+        """
         message_type_dict = field.message_type.file.message_types_by_name
         
         if len(message_type_dict) == 1:
@@ -92,7 +103,10 @@ class SchemaConvertor:
         
         return avro_field
     
-    def __event_class_from_filename(self, root: str, filename: str):
+    def __event_class_from_filename(self, root: str, filename: str) -> Descriptor:
+        """
+        Returns a protobuf Descriptor object with all the parsed fields from the pb2 modules
+        """
         compiled_proto = filename.rpartition(".")[0]
         try:
             pb2_module = self.__import_pb2_module(root, compiled_proto)
@@ -105,33 +119,28 @@ class SchemaConvertor:
         if len(proto_message.keys()) != 1:
             raise ValueError("Each proto file must contain only one message")
 
-        # _, proto_message_descriptor = proto_message.popitem()
         return proto_message.values()[0]
 
-    def __avro_schema_from_event_class(
-        self, event_class: Descriptor
-    ) -> typing.OrderedDict[str, typing.Any]:
+    def __avro_schema_from_event_class(self, event_class: Descriptor) -> OrderedDict[str, Any]:
         fields = []
         for field in event_class.fields_by_name.values():
             
             if not field.message_type:
-                convert_method = self.type_to_convertor[field.type]["method"]
+                convert_method = self.__type_to_convertor[field.type]["method"]
                 avro_field = convert_method(
                     field_name=field.name,
-                    field_type=self.type_to_convertor[field.type]["type"],
+                    field_type=self.__type_to_convertor[field.type]["type"],
                 )
                 fields.append(avro_field)
             else:
-                convert_method = self.type_to_convertor[field.type]["method"]
-                avro_field = convert_method(field=field)
+                convert_method = self.__type_to_convertor[field.type]["method"]
+                avro_field = convert_method(field)
                 fields.append(avro_field)
 
         return self.__avro_schema(name=event_class.name, fields=fields)
 
-    def __avro_schema(
-            self, name: str, fields: typing.List[typing.Dict[str, str]]
-        ) -> typing.OrderedDict[str, typing.Any]:
-            return typing.OrderedDict(  # noqa
+    def __avro_schema(self, name: str, fields: List[Dict[str, str]]) -> OrderedDict[str, Any]:
+            return OrderedDict(  # noqa
                 [
                     ("type", "record"),
                     ("name", name),
@@ -143,20 +152,20 @@ class SchemaConvertor:
         event_class = self.__event_class_from_filename(root, filename)
         avro_schema = self.__avro_schema_from_event_class(event_class)
 
-        os.makedirs(self.avro_path, exist_ok=True)
-        avro_file_path = f"{self.avro_path}/{event_class.name}.avsc"
+        os.makedirs(self.__avro_path, exist_ok=True)
+        avro_file_path = f"{self.__avro_path}/{event_class.name}.avsc"
         
-        logging.info(f"Writing {avro_file_path}")
+        print(f"Writing {avro_file_path}")
         with open(avro_file_path, "w") as f:
             f.write(json.dumps(avro_schema, indent=2))
 
-#public method
+#Public method
     def convert_protobuf_to_avro(self) -> None:
         """
         This is an alpha batch convert process
         Converts the *_pb2.py files to *.avro and writes them to disk
         """
-        for root, _, files in os.walk(self.pb2_path):
+        for root, _, files in os.walk(self.__pb2_path):
             if not files:
                 continue
 
