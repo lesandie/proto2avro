@@ -8,7 +8,7 @@ Fix and Refactor the current ```proto_to_avro.py``` tool
 
 Reference [gist](https://gist.github.com/txomon/5c8eb8402989a26a016265009dc51e67)
 
-To compile protobuffer with a docker container:
+Compile .proto files using the protobuffer compiler provided in a docker container:
 
 ```bash
 $ docker run --rm -ti -v $(pwd)/proto:/defs -v $(pwd)/tmp:/mnt namely/protoc-all -d /defs/ -l python -o /mnt
@@ -38,11 +38,15 @@ $ python proto2avro.py --pb2_path ./tmp --avro_path ./avro
 
 ## Refactoring
 
-I think the main structure of the code is OK. Every function executes a different task, and probably some tasks could be joined to optimize the code, but the main idea, in my opinion is ok.
+I think the main structure of the code is OK. Every function seems to solve a different problem/task, but there are some that can be joined to optimize the code and avoid extra calls (done). If some SOLID principles would have been applied, the code would look much better.
 
-The problem was in the coding/execution:
-* There were many basic OOP principles "raped", like encapsulation (using staticmethods and not understanding what they are)
-* confusing private and public methods
-* The distribution (order) of functions was totally wrong if you want to facilitate somebody to read the code and understand what is going on, it is a good practice to align the order of the definition of methods with their calls (IMHO). 
-* The type hints were badly managed and some functions that returned something din't have a type hint but others did. If you use type hinting then use it in a homogeneus manner all over the codebase.
-* Some functions should be refactored (using continue or break is not a good practice).
+Problems in the coding/execution that has been corrected:
+
+* There were some basic OOP principles "raped", like encapsulation (using Python static methods and not understanding what they are).
+* The distribution (order) of functions was wrong, if you want to facilitate somebody to read the code and understand what is going on, it is a good practice to align the order of the functions definition with their calls (IMHO).
+* Default parameters usage was very confusing (params=params).
+* Some functions were not documented properly, and there were few comments in the code.
+* The type hints were badly managed and some functions that returned something din't have a type hint but others did. Using type hinting improves the readability but it has to be used in a homogeneus manner all over the codebase.
+* Some functions were refactored/deleted:
+  * Using ```continue``` or ```break``` is not a good practice.
+  * Some functions were unnecessary
