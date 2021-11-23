@@ -3,7 +3,7 @@ import json
 import os.path
 import sys
 import click
-from typing import OrderedDict, Any, Dict, List
+from typing import OrderedDict, Any, Dict
 from google.protobuf.descriptor import Descriptor, FieldDescriptor
 
 
@@ -152,11 +152,14 @@ class SchemaConvertor:
         """
         Writes the converted avro schema from a proto message into an avsc file
         """
+        # filename (pb2) -> event_class (proto) -> avro_schema
         event_class = self.__event_class_from_filename(root, filename)
         avro_schema = self.__avro_schema_from_event_class(event_class)
 
         os.makedirs(self.__avro_path, exist_ok=True)
         avro_file_path = f"{self.__avro_path}/{event_class.name}.avsc"
+        
+        # Writes the avsc files
         print(f"Writing {event_class.name}.avsc in {self.__avro_path}")
         with open(avro_file_path, 'w') as f:
             f.write(json.dumps(avro_schema, indent=2))
