@@ -52,7 +52,7 @@ class SchemaConvertor:
         Hardcoded fix when an import error occurs because of an incorrect format
         """
         filepath = f"{root}/{filename}"
-        with open(filepath, "r+") as f:
+        with open(filepath, 'r+') as f:
             content = f.read()
             new_content = content.replace(
                 "from types import", "from dwh.domain.pb2.types import"
@@ -155,8 +155,8 @@ class SchemaConvertor:
         os.makedirs(self.__avro_path, exist_ok=True)
         avro_file_path = f"{self.__avro_path}/{event_class.name}.avsc"
         
-        print(f"Writing {avro_file_path}")
-        with open(avro_file_path, "w") as f:
+        print(f"Writing {filename} in {self.__avro_path}")
+        with open(avro_file_path, 'w') as f:
             f.write(json.dumps(avro_schema, indent=2))
 
 #Public method
@@ -164,19 +164,16 @@ class SchemaConvertor:
         """
         This is an alpha batch convert process
         Converts the *_pb2.py files to *.avro and writes them to disk
+        It ignores the __pycache__ directory and the __init__ constructor
         """
         for root, _, files in os.walk(self.__pb2_path):
-            if not files:
-                continue
-
-            for filename in files:
-                if filename in {"__init__.py"} or "cpython" in filename:
-                    continue
-
-                self.__write_avro_file(root, filename)
+            if "__pycache__" not in root:
+                for filename in files:
+                    if "__init__" not in filename:
+                        self.__write_avro_file(root, filename)
 
 @click.command()
-@click.option("--pb2_path", required=True, help="Location of the pb2 files sources")
+@click.option("--pb2_path", required=True, help="Input location of the pb2 files sources")
 @click.option("--avro_path", required=True, help="Output location for the generated avro schemas")
 
 def main(pb2_path, avro_path):
