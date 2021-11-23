@@ -2,7 +2,7 @@
 
 ## Rationale
 
-Fix and Refactor the current ``proto_to_avro.py``` tool
+Fix and Refactor the current ```proto_to_avro.py``` tool
 
 ## Compile protobuffer
 
@@ -27,6 +27,13 @@ AttributeError: module 'Decimal_pb2_grpc' has no attribute 'DESCRIPTOR'
 
 ```bash
 (virtualenv)$ pip install -r requirements.txt
+```
+
+
+## Usage
+
+```bash
+$ python proto2avro.py --pb2_path ./tmp --avro_path ./avro
 ```
 
 ## Refactoring
