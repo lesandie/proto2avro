@@ -28,3 +28,9 @@ AttributeError: module 'Decimal_pb2_grpc' has no attribute 'DESCRIPTOR'
 ```bash
 (virtualenv)$ pip install -r requirements.txt
 ```
+
+## Refactoring
+
+I think the main structure of the code is OK. Every function executes a different task, and probably some tasks could be joined to optimize the code, but the main idea, in my opinion is ok.
+
+The problem was in the coding/execution. There were many basic OOP principles "raped", like encapsulation (using staticmethods and not understanding what they are), confusing private and public methods... Also the distribution (order) of functions was totally wrong if you want to facilitate somebody to read the code and understand what is going on, it is a good practice to align the order of the definition of methods with their calls (IMHO). Also the type hints were badly managed and some functions that returned something din't have a type hint but others did. If you use type hinting then use it in a homogeneus manner all over the codebase.
