@@ -71,11 +71,11 @@ class SchemaConvertor:
         """
         When the Field type is nor supported raise an exception
         """
-        raise TypeError(f"Type {field_type} not supported")
+        raise TypeError(f"Type {field_type} with name {field_name} not supported")
     
     def __convert_message_type(self, field: FieldDescriptor) -> Dict[str, str]:
         """
-        Converts the protobuf message type to an avro field
+        Converts the proto field type Decimal and Timestamp to avro types
         """
         message_type_dict = field.message_type.file.message_types_by_name
         
@@ -97,34 +97,36 @@ class SchemaConvertor:
                     "default": None,
                 }
             else:
-                self.__not_readable(
-                    field_name=field.name, field_type=field.message_type.full_name
-                )
-        
+                self.__not_readable(field_name=field.name, field_type=field.message_type.full_name)
+
         return avro_field
     
     def __event_class_from_filename(self, root: str, filename: str) -> Descriptor:
         """
-        Returns a protobuf Descriptor object with all the parsed fields from the pb2 modules
+        Returns a proto Descriptor object with all the parsed fields from the pb2 module files
         """
+        # Read the files and import the modules
         compiled_proto = filename.rpartition(".")[0]
         try:
             pb2_module = self.__import_pb2_module(root, compiled_proto)
-        except ImportError:
+        except ImportError(f"Import error detected: applying fix and reimporting {compiled_proto}"):
             self.__fix_import_error(root, filename)
             pb2_module = self.__import_pb2_module(root, compiled_proto)
 
-        proto_message = pb2_module.DESCRIPTOR.message_types_by_name  # noqa
-
+        # Creates a Descriptor type object and returns the object
+        proto_message = pb2_module.DESCRIPTOR.message_types_by_name
         if len(proto_message.keys()) != 1:
             raise ValueError("Each proto file must contain only one message")
 
         return proto_message.values()[0]
 
     def __avro_schema_from_event_class(self, event_class: Descriptor) -> OrderedDict[str, Any]:
+        """
+        From a Descriptor object returns an avro schema
+        """
+        # Convert the proto fields to avro fields
         fields = []
         for field in event_class.fields_by_name.values():
-            
             if not field.message_type:
                 convert_method = self.__type_to_convertor[field.type]["method"]
                 avro_field = convert_method(
@@ -137,7 +139,8 @@ class SchemaConvertor:
                 avro_field = convert_method(field)
                 fields.append(avro_field)
 
-        return OrderedDict(  # noqa
+        #returns the avro schema
+        return OrderedDict(
                 [
                     ("type", "record"),
                     ("name", event_class.name),
