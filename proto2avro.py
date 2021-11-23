@@ -69,7 +69,7 @@ class SchemaConvertor:
 
     def __not_readable(self, field_name: str, field_type: str):
         """
-        When the Field type is nor supported raise an exceptio
+        When the Field type is nor supported raise an exception
         """
         raise TypeError(f"Type {field_type} not supported")
     
@@ -137,13 +137,10 @@ class SchemaConvertor:
                 avro_field = convert_method(field)
                 fields.append(avro_field)
 
-        return self.__avro_schema(name=event_class.name, fields=fields)
-
-    def __avro_schema(self, name: str, fields: List[Dict[str, str]]) -> OrderedDict[str, Any]:
-            return OrderedDict(  # noqa
+        return OrderedDict(  # noqa
                 [
                     ("type", "record"),
-                    ("name", name),
+                    ("name", event_class.name),
                     ("fields", fields),
                 ]
             )
