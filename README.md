@@ -6,7 +6,7 @@ Fix and Refactor the current ```proto_to_avro.py``` tool
 
 ## Compile protobuffer
 
-Reference (gist)[https://gist.github.com/txomon/5c8eb8402989a26a016265009dc51e67]
+Reference [gist](https://gist.github.com/txomon/5c8eb8402989a26a016265009dc51e67)
 
 To compile protobuffer with a docker container:
 
