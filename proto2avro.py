@@ -149,13 +149,15 @@ class SchemaConvertor:
             )
     
     def __write_avro_file(self, root: str, filename: str) -> None:
+        """
+        Writes the converted avro schema from a proto message into an avsc file
+        """
         event_class = self.__event_class_from_filename(root, filename)
         avro_schema = self.__avro_schema_from_event_class(event_class)
 
         os.makedirs(self.__avro_path, exist_ok=True)
         avro_file_path = f"{self.__avro_path}/{event_class.name}.avsc"
-        
-        print(f"Writing {filename} in {self.__avro_path}")
+        print(f"Writing {event_class.name}.avsc in {self.__avro_path}")
         with open(avro_file_path, 'w') as f:
             f.write(json.dumps(avro_schema, indent=2))
 
