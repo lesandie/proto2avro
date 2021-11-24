@@ -110,7 +110,7 @@ class SchemaConvertor:
         try:
             pb2_module = self._import_pb2_module(root, compiled_proto)
         except ImportError(f"Import error detected: applying fix and reimporting {compiled_proto}"):
-            self.__fix_import_error(root, filename)
+            self._fix_import_error(root, filename)
             pb2_module = self._import_pb2_module(root, compiled_proto)
 
         # Creates a Descriptor type object and returns the object
