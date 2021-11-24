@@ -42,7 +42,8 @@ I think the main structure of the code is OK. Every function seems to solve a di
 
 Problems in the coding/execution that has been corrected:
 
-* There were some basic OOP principles "raped", like encapsulation (using Python static methods and not understanding what they are).
+* There were some basic OOP patterns "raped", like encapsulation (using Python static methods and not understanding what they are).
+* Regarding public and private methods (and properties), although in Python privates are accessible, it is a good pattern to signal that a method or property is private to avoid other users to mess with the values of the properties or call unecessary methods. In this case both paths should be private and cannot be changed once you executed the script. The same for the types_conversion. 
 * The distribution (order) of functions was wrong, if you want to facilitate somebody to read the code and understand what is going on, it is a good practice to align the order of the functions definition with their calls (IMHO).
 * Default parameters usage was very confusing (params=params).
 * Some functions were not documented properly, and there were few comments in the code.
@@ -50,3 +51,4 @@ Problems in the coding/execution that has been corrected:
 * Some functions were refactored/deleted:
   * Using ```continue``` or ```break``` is not a good practice.
   * Some functions were unnecessary
+
