@@ -47,20 +47,6 @@ class SchemaConvertor:
         spec.loader.exec_module(module)
         return importlib.import_module(name=compiled_proto)
 
-    def _fix_import_error(self, root: str, filename: str) -> None:
-        """
-        Hardcoded fix when an import error occurs because of an incorrect format
-        """
-        filepath = f"{root}/{filename}"
-        with open(filepath, 'r+') as f:
-            content = f.read()
-            new_content = content.replace(
-                "from types import", "from dwh.domain.pb2.types import"
-            )
-            f.truncate(0)
-            f.seek(0)
-            f.write(new_content)
-
     def _read_through(self, field_name: str, field_type: str) -> Dict[str, str]:
         """
         system default is used: zero for numeric types, the empty string for strings, false for bools
@@ -110,7 +96,16 @@ class SchemaConvertor:
         try:
             pb2_module = self._import_pb2_module(root, compiled_proto)
         except ImportError(f"Import error detected: applying fix and reimporting {compiled_proto}"):
-            self._fix_import_error(root, filename)
+            # Hardcoded fix when an import error occurs because of an incorrect format
+            filepath = f"{root}/{filename}"
+            with open(filepath, 'r+') as f:
+                content = f.readline()
+                new_content = content.replace(
+                    "from types import", "from dwh.domain.pb2.types import"
+                )
+                f.truncate(0)
+                f.seek(0)
+                f.write(new_content)
             pb2_module = self._import_pb2_module(root, compiled_proto)
 
         # Creates a Descriptor type object and returns the object
