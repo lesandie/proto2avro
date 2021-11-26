@@ -3,7 +3,7 @@ import json
 import os.path
 import sys
 import click
-from typing import OrderedDict, Any, Tuple
+from typing import OrderedDict, Any
 from google.protobuf.descriptor import Descriptor, FieldDescriptor
 
 
@@ -47,7 +47,7 @@ class SchemaConvertor:
         spec.loader.exec_module(module)
         return importlib.import_module(name=compiled_proto)
 
-    def _read_through(self, field_name: str, field_type: str) -> Tuple[str, str]:
+    def _read_through(self, field_name: str, field_type: str) -> OrderedDict[Any]:
         """
         system default is used: zero for numeric types, the empty string for strings, false for bools
         """
@@ -59,7 +59,7 @@ class SchemaConvertor:
         """
         raise TypeError(f"Type {field_type} with name {field_name} not supported")
     
-    def _convert_message_type(self, field: FieldDescriptor) -> Tuple[str, str]:
+    def _convert_message_type(self, field: FieldDescriptor) -> OrderedDict[Any]:
         """
         Converts the proto field type Decimal and Timestamp to avro types
         """
@@ -115,7 +115,7 @@ class SchemaConvertor:
 
         return proto_message.values()[0]
 
-    def _avro_schema_from_event_class(self, event_class: Descriptor) -> OrderedDict[str, Any]:
+    def _avro_schema_from_event_class(self, event_class: Descriptor) -> OrderedDict[Any]:
         """
         From a Descriptor object returns an avro schema
         """
