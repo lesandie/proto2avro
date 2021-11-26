@@ -115,7 +115,7 @@ class SchemaConvertor:
 
         return proto_message.values()[0]
 
-    def _avro_schema_from_event_class(self, event_class: Descriptor) -> OrderedDict[str, Any]:
+    def _avro_schema_from_event_class(self, event_class: Descriptor) -> OrderedDict[Any]:
         """
         From a Descriptor object returns an avro schema
         """
